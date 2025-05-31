@@ -53,6 +53,8 @@ int main() {
             case 6: exportToFile(incomes, incomeCount, expenses, expenseCount); break;
             case 7: break;
             default: printf("Invalid option.\n");
+            		 printf("Press enter to continue. \n");
+            		 getchar();
         }
     } while (option != 7);
 
@@ -109,6 +111,8 @@ int addIncome(Income incomes[], int count) {
     flushInput();
 
     printf("Income entry added successfully.\n");
+    printf("Press enter to continue.\n");
+    getchar();
     return count + 1;
 }
 
