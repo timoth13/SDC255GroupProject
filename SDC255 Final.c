@@ -21,6 +21,8 @@ typedef struct {
     float amount;
 } Expense;
 
+int i;
+
 // Function Prototypes
 int menu();
 int addIncome(Income incomes[], int count);
@@ -95,7 +97,6 @@ int addIncome(Income incomes[], int count) {
     if (len > 0 && incomes[count].date[len - 1] == '\n') {
         incomes[count].date[len - 1] = '\0';
     }
-
     flushInput();
     
     printf("Enter description: ");
@@ -109,6 +110,11 @@ int addIncome(Income incomes[], int count) {
     printf("Enter amount: ");
     scanf("%f", &incomes[count].amount);
     flushInput();
+    while(incomes[count].amount <= 0){
+    	printf("Amount must be positive.\nEnter amount: ");
+    	scanf("%f", &incomes[count].amount);
+    	flushInput();
+	}
 
     printf("Income entry added successfully.\n");
     printf("Press enter to continue.\n");
@@ -117,28 +123,100 @@ int addIncome(Income incomes[], int count) {
 }
 
 int addExpense(Expense expenses[], int count) {
-    printf("[Stub] Add Expense\n");
-    return count;
+if (count >= MAX_RECORDS) {
+        printf("Expense list full. Cannot add more entries.\n");
+        return count;
+    }
+
+    printf("Enter date (YYYY-MM-DD): ");
+    fgets(expenses[count].date, MAX_DATE, stdin);
+    int len = strlen(expenses[count].date);
+    //get rid of \n..fgets includes \n
+    
+    if (len > 0 && expenses[count].date[len - 1] == '\n') {
+        expenses[count].date[len - 1] = '\0';
+    }
+    flushInput();
+    
+    printf("Enter description: ");
+    fgets(expenses[count].description, MAX_DESC, stdin);
+    len = strlen(expenses[count].description);
+    //get rid of \n..fgets includes \n
+	if (len > 0 && expenses[count].description[len - 1] == '\n') {
+        expenses[count].description[len - 1] = '\0';
+    }
+    
+    printf("Enter category: ");
+    fgets(expenses[count].category, MAX_CAT, stdin);
+    len = strlen(expenses[count].category);
+    //get rid of \n..fgets includes \n
+	if (len > 0 && expenses[count].category[len - 1] == '\n') {
+        expenses[count].category[len - 1] = '\0';
+    }
+
+    printf("Enter amount: ");
+    scanf("%f", &expenses[count].amount);
+    flushInput();
+    while(expenses[count].amount <= 0){
+    	printf("Amount must be positive.\nEnter amount: ");
+    	scanf("%f", &expenses[count].amount);
+    	flushInput();
+	}
+
+    printf("Expenses entry added successfully.\n");
+    printf("Press enter to continue.\n");
+    getchar();
+    return count + 1;
 }
 
 void displayTransactions(Income incomes[], int incomeCount, Expense expenses[], int expenseCount) {
-    printf("[Stub] Display Transactions\n");
+	printf("\nIncome Transactions\n");
+    for (i = 0; i < incomeCount; i++){
+    	printf("%s %s $%.2f\n", incomes[i].date, incomes[i].description, incomes[i].amount);
+    }
+    
+     printf("\nExpense Transactions\n");
+    for (i = 0; i < expenseCount; i++){
+    	printf("%s %s %s $%.2f\n", expenses[i].date, expenses[i].description, expenses[i].category, expenses[i].amount);
+    }
+    printf("\nPress enter to continue.\n");
+    getchar();
 }
 
 void displayIncomeSummary(Income incomes[], int incomeCount) {
-    printf("[Stub] Display Income Summary\n");
+	float total = 0;
+    printf("Income Summary\n");
+    for (i = 0; i < incomeCount; i++){
+    	total += incomes[i].amount;
+	}
+	
+	printf("\nTotal Income: $%.2f\nTotal Records: %d\n", total, incomeCount);
+	printf("Press enter to continue.\n");
+    getchar();
 }
 
 void displayExpenseSummary(Expense expenses[], int expenseCount) {
-    printf("[Stub] Display Expense Summary\n");
+	float total = 0;
+    printf("Expense Summary\n");
+    for (i = 0; i < expenseCount; i++){
+    	total += expenses[i].amount;
+	}
+	
+	printf("\nTotal Expense: $%.2f\nTotal Records: %d\n", total, expenseCount);
+	printf("Press enter to continue.\n");
+	getchar();
 }
 
 void exportToFile(Income incomes[], int incomeCount, Expense expenses[], int expenseCount) {
-    printf("[Stub] Export to File\n");
+	printf("Edit once file save validation");
+    printf("Press enter to continue.\n");
+    getchar();
 }
 
 void loadFromFile(Income incomes[], int *incomeCount, Expense expenses[], int *expenseCount) {
-    printf("[Stub] Load from File\n");
+	printf("Edit once file load validation");
+    printf("Press enter to continue.\n");
+    getchar();
 }
 
 void clearScreen() {
@@ -153,4 +231,3 @@ void flushInput() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
-
