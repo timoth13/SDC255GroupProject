@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_RECORDS 100
 #define MAX_DATE 11
@@ -54,8 +55,7 @@ int main() {
             case 5: displayExpenseSummary(expenses, expenseCount); break;
             case 6: exportToFile(incomes, incomeCount, expenses, expenseCount); break;
             case 7: break;
-            default: printf("Invalid option.\n");
-            		 printf("Press enter to continue. \n");
+            default: printf("Press enter to continue. \n");
             		 getchar();
         }
     } while (option != 7);
@@ -78,7 +78,9 @@ int menu() {
     printf("6. Export Transactions to File\n");
     printf("7. Exit\n");
     printf("Select option: ");
-    scanf("%d", &option);
+    if(scanf("%d", &option)==0){
+    	printf("Invalid input, please enter a number.");
+	};
     flushInput();
     return option;
 }
@@ -97,6 +99,16 @@ int addIncome(Income incomes[], int count) {
     if (len > 0 && incomes[count].date[len - 1] == '\n') {
         incomes[count].date[len - 1] = '\0';
     }
+    
+    while(checkDateFormat(incomes[count].date)==0){
+		printf("Invalid date formate, use (YYYY-MM-DD): ");
+		fgets(incomes[count].date, MAX_DATE, stdin);
+		int len = strlen(incomes[count].date);
+	    if (len > 0 && incomes[count].date[len - 1] == '\n') {
+	        incomes[count].date[len - 1] = '\0';
+    	}
+    	flushInput();
+	}
     flushInput();
     
     printf("Enter description: ");
@@ -108,13 +120,16 @@ int addIncome(Income incomes[], int count) {
     }
 
     printf("Enter amount: ");
-    scanf("%f", &incomes[count].amount);
+		do {
+			if (scanf("%f", &incomes[count].amount)==1 && incomes[count].amount>0){
+	    	break;
+		}
+		else{
+			printf("Invalid input. Please enter a positive number.\n");
+			flushInput();
+		}
+	}while(1);
     flushInput();
-    while(incomes[count].amount <= 0){
-    	printf("Amount must be positive.\nEnter amount: ");
-    	scanf("%f", &incomes[count].amount);
-    	flushInput();
-	}
 
     printf("Income entry added successfully.\n");
     printf("Press enter to continue.\n");
@@ -136,7 +151,15 @@ if (count >= MAX_RECORDS) {
     if (len > 0 && expenses[count].date[len - 1] == '\n') {
         expenses[count].date[len - 1] = '\0';
     }
-    flushInput();
+    
+    while(checkDateFormat(expenses[count].date)==0){
+    	printf("Invalid date format, use (YYYY-MM-DD)");
+    	fgets(expenses[count].date, MAX_DATE, stdin);
+    	int len = strlen(expenses[count].date);
+	    if (len > 0 && expenses[count].date[len - 1] == '\n') {
+	        expenses[count].date[len - 1] = '\0';
+	    }
+	}
     
     printf("Enter description: ");
     fgets(expenses[count].description, MAX_DESC, stdin);
@@ -145,6 +168,7 @@ if (count >= MAX_RECORDS) {
 	if (len > 0 && expenses[count].description[len - 1] == '\n') {
         expenses[count].description[len - 1] = '\0';
     }
+    flushInput();
     
     printf("Enter category: ");
     fgets(expenses[count].category, MAX_CAT, stdin);
@@ -155,13 +179,17 @@ if (count >= MAX_RECORDS) {
     }
 
     printf("Enter amount: ");
-    scanf("%f", &expenses[count].amount);
+		do {
+			if (scanf("%f", &expenses[count].amount)==1 && expenses[count].amount>0){
+	    	break;
+		}
+		else{
+			printf("Invalid input. Please enter a positive number.\n");
+			flushInput();
+		}
+	}while(1);
     flushInput();
-    while(expenses[count].amount <= 0){
-    	printf("Amount must be positive.\nEnter amount: ");
-    	scanf("%f", &expenses[count].amount);
-    	flushInput();
-	}
+
 
     printf("Expenses entry added successfully.\n");
     printf("Press enter to continue.\n");
@@ -208,7 +236,7 @@ void displayExpenseSummary(Expense expenses[], int expenseCount) {
 }
 
 void exportToFile(Income incomes[], int incomeCount, Expense expenses[], int expenseCount) {
-	printf("Edit once file save validation");
+	printf("Edit once file save validation\n");
     printf("Press enter to continue.\n");
     getchar();
 }
@@ -230,4 +258,21 @@ void clearScreen() {
 void flushInput() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
+}
+
+int checkDateFormat(const char *date){
+	for(i = 0; i <10; i++){
+		if (i==4||i==7){
+			if(date[i] != '-'){
+				return 0;
+			}
+		}
+		if (i!=4 && i!=7){
+			if(isdigit(date[i])==0){
+				return 0;
+			}
+		}
+	}
+	
+	return 1;
 }
