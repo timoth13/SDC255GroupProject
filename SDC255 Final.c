@@ -22,8 +22,6 @@ typedef struct {
     float amount;
 } Expense;
 
-int i;
-
 // Function Prototypes
 int menu();
 int addIncome(Income incomes[], int count);
@@ -86,30 +84,24 @@ int menu() {
 }
 
 int addIncome(Income incomes[], int count) {
+	int correct=0;
     if (count >= MAX_RECORDS) {
         printf("Income list full. Cannot add more entries.\n");
         return count;
     }
 
     printf("Enter date (YYYY-MM-DD): ");
-    fgets(incomes[count].date, MAX_DATE, stdin);
-    int len = strlen(incomes[count].date);
-    //get rid of \n..fgets includes \n
-    
-    if (len > 0 && incomes[count].date[len - 1] == '\n') {
-        incomes[count].date[len - 1] = '\0';
-    }
-    
-    while(checkDateFormat(incomes[count].date)==0){
-		printf("Invalid date formate, use (YYYY-MM-DD): ");
+    int len;
+
+    while(correct==0){
 		fgets(incomes[count].date, MAX_DATE, stdin);
-		int len = strlen(incomes[count].date);
+		len = strlen(incomes[count].date);
 	    if (len > 0 && incomes[count].date[len - 1] == '\n') {
 	        incomes[count].date[len - 1] = '\0';
     	}
+    	correct=checkDateFormat(incomes[count].date);
     	flushInput();
 	}
-    flushInput();
     
     printf("Enter description: ");
     fgets(incomes[count].description, MAX_DESC, stdin);
@@ -118,6 +110,7 @@ int addIncome(Income incomes[], int count) {
 	if (len > 0 && incomes[count].description[len - 1] == '\n') {
         incomes[count].description[len - 1] = '\0';
     }
+    flushInput();
 
     printf("Enter amount: ");
 		do {
@@ -126,10 +119,8 @@ int addIncome(Income incomes[], int count) {
 		}
 		else{
 			printf("Invalid input. Please enter a positive number.\n");
-			flushInput();
 		}
 	}while(1);
-    flushInput();
 
     printf("Income entry added successfully.\n");
     printf("Press enter to continue.\n");
@@ -138,27 +129,24 @@ int addIncome(Income incomes[], int count) {
 }
 
 int addExpense(Expense expenses[], int count) {
-if (count >= MAX_RECORDS) {
-        printf("Expense list full. Cannot add more entries.\n");
-        return count;
-    }
+	int correct=0;
+	if (count >= MAX_RECORDS) {
+	        printf("Expense list full. Cannot add more entries.\n");
+	        return count;
+	    }
 
     printf("Enter date (YYYY-MM-DD): ");
-    fgets(expenses[count].date, MAX_DATE, stdin);
-    int len = strlen(expenses[count].date);
-    //get rid of \n..fgets includes \n
+
+    int len;
     
-    if (len > 0 && expenses[count].date[len - 1] == '\n') {
-        expenses[count].date[len - 1] = '\0';
-    }
-    
-    while(checkDateFormat(expenses[count].date)==0){
-    	printf("Invalid date format, use (YYYY-MM-DD)");
+    while(correct==0){
     	fgets(expenses[count].date, MAX_DATE, stdin);
-    	int len = strlen(expenses[count].date);
+    	len = strlen(expenses[count].date);
 	    if (len > 0 && expenses[count].date[len - 1] == '\n') {
 	        expenses[count].date[len - 1] = '\0';
 	    }
+	    correct=checkDateFormat(expenses[count].date);
+	    flushInput();
 	}
     
     printf("Enter description: ");
@@ -177,6 +165,7 @@ if (count >= MAX_RECORDS) {
 	if (len > 0 && expenses[count].category[len - 1] == '\n') {
         expenses[count].category[len - 1] = '\0';
     }
+    flushInput();
 
     printf("Enter amount: ");
 		do {
@@ -185,10 +174,8 @@ if (count >= MAX_RECORDS) {
 		}
 		else{
 			printf("Invalid input. Please enter a positive number.\n");
-			flushInput();
 		}
 	}while(1);
-    flushInput();
 
 
     printf("Expenses entry added successfully.\n");
@@ -198,6 +185,7 @@ if (count >= MAX_RECORDS) {
 }
 
 void displayTransactions(Income incomes[], int incomeCount, Expense expenses[], int expenseCount) {
+	int i;
 	printf("\nIncome Transactions\n");
     for (i = 0; i < incomeCount; i++){
     	printf("%s %s $%.2f\n", incomes[i].date, incomes[i].description, incomes[i].amount);
@@ -213,6 +201,7 @@ void displayTransactions(Income incomes[], int incomeCount, Expense expenses[], 
 
 void displayIncomeSummary(Income incomes[], int incomeCount) {
 	float total = 0;
+	int i;
     printf("Income Summary\n");
     for (i = 0; i < incomeCount; i++){
     	total += incomes[i].amount;
@@ -225,6 +214,7 @@ void displayIncomeSummary(Income incomes[], int incomeCount) {
 
 void displayExpenseSummary(Expense expenses[], int expenseCount) {
 	float total = 0;
+	int i;
     printf("Expense Summary\n");
     for (i = 0; i < expenseCount; i++){
     	total += expenses[i].amount;
@@ -261,17 +251,59 @@ void flushInput() {
 }
 
 int checkDateFormat(const char *date){
+	int i;
 	for(i = 0; i <10; i++){
 		if (i==4||i==7){
 			if(date[i] != '-'){
+				printf("Invalid date format, use (YYYY-MM-DD): ");
 				return 0;
 			}
 		}
 		if (i!=4 && i!=7){
 			if(isdigit(date[i])==0){
+				printf("Invalid date format, use (YYYY-MM-DD): ");
 				return 0;
 			}
 		}
+	}
+	
+	int year = atoi(&date[0]);
+	int month = atoi(&date[5]);
+	int day = atoi(&date[8]);
+	int maxDay;
+	
+	if (month < 1 || month > 12){
+		printf("Month must be between 1 and 12, use (YYYY-MM-DD): ");
+		return 0;
+	}
+	
+	switch(month){
+		case 1:
+		case 3:
+		case 5:
+		case 7:
+		case 8:
+		case 10:
+		case 12: maxDay=31;
+				break;
+		case 4:
+		case 6:
+		case 9:
+		case 11: maxDay=30;
+				break;
+		case 2: if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)){
+					maxDay = 29;
+				}
+				else{
+					maxDay = 28;
+				}
+			break;
+		default: return 0;
+		}
+		
+	if ( day < 1 || day > maxDay){
+		printf("Must use valid day in the month, use (YYYY-MM-DD): ");
+		return 0;
 	}
 	
 	return 1;
