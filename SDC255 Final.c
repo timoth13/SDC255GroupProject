@@ -33,6 +33,7 @@ void exportToFile(Income incomes[], int incomeCount, Expense expenses[], int exp
 void loadFromFile(Income incomes[], int *incomeCount, Expense expenses[], int *expenseCount);
 void flushInput();
 void clearScreen();
+const char *filename = "FinancialTracker.csv";
 
 int main() {
     Income incomes[MAX_RECORDS];
@@ -91,26 +92,26 @@ int addIncome(Income incomes[], int count) {
     }
 
     printf("Enter date (YYYY-MM-DD): ");
-    int len;
 
     while(correct==0){
 		fgets(incomes[count].date, MAX_DATE, stdin);
-		len = strlen(incomes[count].date);
-	    if (len > 0 && incomes[count].date[len - 1] == '\n') {
-	        incomes[count].date[len - 1] = '\0';
-    	}
+		if(strchr(incomes[count].date, '\n')==NULL){
+			flushInput();
+		}
+		else{
+			incomes[count].date[strcspn(incomes[count].date, "\n")]='\0';
+		}
     	correct=checkDateFormat(incomes[count].date);
-    	flushInput();
 	}
     
     printf("Enter description: ");
     fgets(incomes[count].description, MAX_DESC, stdin);
-    len = strlen(incomes[count].description);
-    //get rid of \n..fgets includes \n
-	if (len > 0 && incomes[count].description[len - 1] == '\n') {
-        incomes[count].description[len - 1] = '\0';
-    }
-    flushInput();
+    if(strchr(incomes[count].description, '\n')==NULL){
+    	flushInput();
+	}
+	else{
+			incomes[count].description[strcspn(incomes[count].description, "\n")]='\0';
+		}
 
     printf("Enter amount: ");
 		do {
@@ -118,9 +119,10 @@ int addIncome(Income incomes[], int count) {
 	    	break;
 		}
 		else{
-			printf("Invalid input. Please enter a positive number.\n");
+			printf("Invalid input. Please enter a positive number: ");
 		}
 	}while(1);
+	flushInput();
 
     printf("Income entry added successfully.\n");
     printf("Press enter to continue.\n");
@@ -136,36 +138,35 @@ int addExpense(Expense expenses[], int count) {
 	    }
 
     printf("Enter date (YYYY-MM-DD): ");
-
-    int len;
     
     while(correct==0){
     	fgets(expenses[count].date, MAX_DATE, stdin);
-    	len = strlen(expenses[count].date);
-	    if (len > 0 && expenses[count].date[len - 1] == '\n') {
-	        expenses[count].date[len - 1] = '\0';
-	    }
+    	if(strchr(expenses[count].date, '\n')==NULL){
+    		flushInput();
+		}
+		else{
+			expenses[count].date[strcspn(expenses[count].date, "\n")]='\0';
+		}
 	    correct=checkDateFormat(expenses[count].date);
-	    flushInput();
 	}
     
     printf("Enter description: ");
     fgets(expenses[count].description, MAX_DESC, stdin);
-    len = strlen(expenses[count].description);
-    //get rid of \n..fgets includes \n
-	if (len > 0 && expenses[count].description[len - 1] == '\n') {
-        expenses[count].description[len - 1] = '\0';
-    }
-    flushInput();
+    if(strchr(expenses[count].description, '\n')==NULL){
+    	flushInput();
+	}
+	else{
+		expenses[count].description[strcspn(expenses[count].description, "\n")]='\0';
+	}
     
     printf("Enter category: ");
     fgets(expenses[count].category, MAX_CAT, stdin);
-    len = strlen(expenses[count].category);
-    //get rid of \n..fgets includes \n
-	if (len > 0 && expenses[count].category[len - 1] == '\n') {
-        expenses[count].category[len - 1] = '\0';
-    }
-    flushInput();
+    if(strchr(expenses[count].category, '\n')==NULL){
+    	flushInput();
+	}
+	else{
+		expenses[count].category[strcspn(expenses[count].category, "\n")]='\0';
+	}
 
     printf("Enter amount: ");
 		do {
@@ -173,10 +174,10 @@ int addExpense(Expense expenses[], int count) {
 	    	break;
 		}
 		else{
-			printf("Invalid input. Please enter a positive number.\n");
+			printf("Invalid input. Please enter a positive number: ");
 		}
 	}while(1);
-
+	flushInput();
 
     printf("Expenses entry added successfully.\n");
     printf("Press enter to continue.\n");
@@ -188,12 +189,12 @@ void displayTransactions(Income incomes[], int incomeCount, Expense expenses[], 
 	int i;
 	printf("\nIncome Transactions\n");
     for (i = 0; i < incomeCount; i++){
-    	printf("%s %s $%.2f\n", incomes[i].date, incomes[i].description, incomes[i].amount);
+    	printf("%s\n%s\n$%.2f\n\n", incomes[i].date, incomes[i].description, incomes[i].amount);
     }
     
      printf("\nExpense Transactions\n");
     for (i = 0; i < expenseCount; i++){
-    	printf("%s %s %s $%.2f\n", expenses[i].date, expenses[i].description, expenses[i].category, expenses[i].amount);
+    	printf("%s\n%s\n%s\n$%.2f\n\n", expenses[i].date, expenses[i].description, expenses[i].category, expenses[i].amount);
     }
     printf("\nPress enter to continue.\n");
     getchar();
@@ -226,13 +227,67 @@ void displayExpenseSummary(Expense expenses[], int expenseCount) {
 }
 
 void exportToFile(Income incomes[], int incomeCount, Expense expenses[], int expenseCount) {
-	printf("Edit once file save validation\n");
+	FILE *file = fopen(filename, "w");
+	if (file == NULL){
+		printf("Error opening file for writing.\n");
+		return;
+	}
+	int i = 0;
+	for(i=0; i < incomeCount; i++){
+		fprintf(file, "Income,%s,%s,%.2f\n", incomes[i].date, incomes[i].description, incomes[i].amount);
+	}
+	for(i=0; i < expenseCount; i++){
+		fprintf(file, "Expense,%s,%s,%s,%.2f\n", expenses[i].date, expenses[i].description, expenses[i].category, expenses[i].amount);
+	}
+	fclose(file);
+	printf("Successfully saved file.\n");
     printf("Press enter to continue.\n");
     getchar();
 }
 
 void loadFromFile(Income incomes[], int *incomeCount, Expense expenses[], int *expenseCount) {
-	printf("Edit once file load validation");
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("No previous file found. Starting fresh.\n");
+        return;
+    }
+
+    char line[256];
+    *incomeCount = 0;
+    *expenseCount = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\n")] = '\0'; // remove newline
+
+        char type[10], date[MAX_DATE], desc[MAX_DESC], cat[MAX_CAT];
+        float amount;
+
+        if (strncmp(line, "Income,", 7) == 0) {
+            // Try reading income: type, date, desc, amount
+            int fields = sscanf(line,"%9[^,],%10[^,],%50[^,],%f",
+                                type, date, desc, &amount);
+            if (fields == 4 && *incomeCount < MAX_RECORDS) {
+                strcpy(incomes[*incomeCount].date, date);
+                strcpy(incomes[*incomeCount].description, desc);
+                incomes[*incomeCount].amount = amount;
+                (*incomeCount)++;
+            }
+        } else if (strncmp(line, "Expense,", 8) == 0) {
+            // Try reading expense: type, date, desc, cat, amount
+            int fields = sscanf(line,"%9[^,],%10[^,],%50[^,],%20[^,],%f",
+                                type, date, desc, cat, &amount);
+            if (fields == 5 && *expenseCount < MAX_RECORDS) {
+                strcpy(expenses[*expenseCount].date, date);
+                strcpy(expenses[*expenseCount].description, desc);
+                strcpy(expenses[*expenseCount].category, cat);
+                expenses[*expenseCount].amount = amount;
+                (*expenseCount)++;
+            }
+        }
+    }
+
+    fclose(file);
+    printf("Successfully read file\n");
     printf("Press enter to continue.\n");
     getchar();
 }
